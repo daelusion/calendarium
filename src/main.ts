@@ -1,10 +1,4 @@
-import {
-    Editor,
-    Platform,
-    Plugin,
-    WorkspaceLeaf,
-    addIcon,
-} from "obsidian";
+import { Editor, Platform, Plugin, WorkspaceLeaf, addIcon } from "obsidian";
 
 import CalendariumSettings from "./settings/settings.view";
 
@@ -174,10 +168,16 @@ export default class Calendarium extends Plugin {
                 ViewType.Calendarium,
                 "Open Calendarium",
                 (evt) => {
+                    const wasPrimaryMouse = evt.button === 0 && !evt.ctrlKey;
+                    const focusExisting = this.data.layout.focusFirstExisting
+                        ? wasPrimaryMouse
+                        : false;
+
                     this.addCalendarView({
                         full: evt.getModifierState(
                             Platform.isMacOS ? "Meta" : "Control"
                         ),
+                        focusExisting,
                     });
                 }
             );
@@ -245,18 +245,52 @@ export default class Calendarium extends Plugin {
         });
     }
 
-    addCalendarView(params: { full?: boolean; startup?: boolean } = {}) {
-        if (
-            params?.startup &&
-            this.app.workspace.getLeavesOfType(ViewType.Calendarium)?.length
-        )
-            return;
-        this.getLeaf(params?.full ?? false);
+    calendarExists() {
+        return (
+            this.app.workspace.getLeavesOfType(ViewType.Calendarium).length >= 1
+        );
     }
-    getLeaf(full: boolean) {
-        let leaf: WorkspaceLeaf | null = full
-            ? this.app.workspace.getLeaf(true)
-            : this.app.workspace.getRightLeaf(false);
+
+    addCalendarView(
+        params: {
+            full?: boolean;
+            startup?: boolean;
+            focusExisting?: boolean;
+        } = {}
+    ) {
+        const activeLeaves = this.app.workspace.getLeavesOfType(
+            ViewType.Calendarium
+        );
+
+        const pane =
+            params.full === true ? "center" : this.data.layout.preferredLeaf;
+
+        // No active calendars OR always make a new tab
+        if (activeLeaves.length === 0 || !params.focusExisting) {
+            this.getCalendarLeaf(pane);
+            return;
+        } else if (params?.startup) {
+            return;
+        }
+
+        // Cannot be null as we already checked length > 0
+        const firstLeaf = activeLeaves.first()!;
+        this.app.workspace.revealLeaf(firstLeaf);
+    }
+
+    getCalendarLeaf(leafDir: string = "right") {
+        let leaf: WorkspaceLeaf | null = null;
+        if (leafDir === "left") {
+            leaf = this.app.workspace.getLeftLeaf(
+                this.data.layout.useVerticalSplit
+            );
+        } else if (leafDir === "right") {
+            leaf = this.app.workspace.getRightLeaf(
+                this.data.layout.useVerticalSplit
+            );
+        } else {
+            leaf = this.app.workspace.getLeaf(true);
+        }
 
         leaf?.setViewState({
             type: ViewType.Calendarium,

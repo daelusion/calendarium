@@ -52,7 +52,7 @@ export const DEFAULT_CALENDAR: PresetCalendar = {
     seasonal: copy(DEFAULT_SEASONAL_DATA),
     locations: {
         locations: [],
-        defaultLocation: ''
+        defaultLocation: "",
     },
     current: {
         year: null,
@@ -93,4 +93,10 @@ export const DEFAULT_DATA: CalendariumData = {
     syncBehavior: SyncBehavior.Ask,
     inlineEventsTag: null,
     paths: [["/", PathSelections.DEFAULT]],
+    // Calendar Layout settings
+    layout: {
+        focusFirstExisting: false,
+        preferredLeaf: "right",
+        useVerticalSplit: false,
+    },
 };

@@ -84,6 +84,7 @@ export default class CalendariumSettings extends PluginSettingTab {
         calendar: false,
         event: false,
         advanced: false,
+        layout: false,
     };
     parsingEl: HTMLDetailsElement;
     settings$ = SettingsService;
@@ -118,7 +119,7 @@ export default class CalendariumSettings extends PluginSettingTab {
 
         this.buildEventsManagement(
             this.contentEl.createEl("details", {
-                cls: "calendarium-nested-settings",
+                cls: "setting-item calendarium-nested-settings",
                 attr: {
                     /* ...(this.toggleState.calendar ? { open: `open` } : {}), */
                     open: "open",
@@ -126,15 +127,25 @@ export default class CalendariumSettings extends PluginSettingTab {
             })
         );
         this.parsingEl = this.contentEl.createEl("details", {
-            cls: "calendarium-nested-settings",
+            cls: "setting-item calendarium-nested-settings",
             attr: {
                 ...(this.toggleState.event ? { open: `open` } : {}),
             },
         });
         this.buildEventsParsing(this.parsingEl);
+
+        this.buildLayout(
+            this.contentEl.createEl("details", {
+                cls: "setting-item calendarium-nested-settings",
+                attr: {
+                    ...(this.toggleState.layout ? { open: `open` } : {}),
+                },
+            })
+        );
+
         this.buildAdvanced(
             this.contentEl.createEl("details", {
-                cls: "calendarium-nested-settings",
+                cls: "setting-item calendarium-nested-settings",
                 attr: {
                     ...(this.toggleState.advanced ? { open: `open` } : {}),
                 },
@@ -891,6 +902,65 @@ export default class CalendariumSettings extends PluginSettingTab {
             validateAndSend(value.item.path);
         });
     }
+
+    buildLayout(containerEl: HTMLDetailsElement) {
+        containerEl.empty();
+        const summary = containerEl.createEl("summary");
+        containerEl.ontoggle = async () => {
+            this.toggleState.advanced = containerEl.open;
+        };
+        new Setting(summary).setHeading().setName("Layout");
+
+        setIcon(summary.createDiv("collapser").createDiv("handle"), COLLAPSE);
+
+        new Setting(containerEl)
+            .setName("Focus existing calendar by default")
+            .setDesc(
+                createFragment((e) => {
+                    e.createSpan({
+                        text: "Focus the first existing Calendarium tab when clicking the ribbon icon. ",
+                    });
+                    e.createSpan({
+                        text: "New tabs can be opened with Ctrl+Click or Right-Click",
+                    });
+                })
+            )
+            .addToggle((t) => {
+                t.setValue(this.data.layout.focusFirstExisting).onChange(
+                    async (v) => {
+                        this.data.layout.focusFirstExisting = v;
+                        this.settings$.save();
+                    }
+                );
+            });
+
+        new Setting(containerEl)
+            .setName("Preferred calendar leaf")
+            .setDesc("Select which leaf new calendars should open in.")
+            .addDropdown((d) => {
+                d.addOption("left", "Left");
+                d.addOption("center", "Center");
+                d.addOption("right", "Right (default)");
+
+                d.setValue(this.data.layout.preferredLeaf ?? "right");
+                d.onChange(async (v) => {
+                    this.data.layout.preferredLeaf = v;
+                    this.settings$.save();
+                });
+            });
+
+        new Setting(containerEl)
+            .setName("Open new calendars in vertical split")
+            .addToggle((t) => {
+                t.setValue(this.data.layout.useVerticalSplit).onChange(
+                    async (v) => {
+                        this.data.layout.useVerticalSplit = v;
+                        this.settings$.save();
+                    }
+                );
+            });
+    }
+
     buildAdvanced(containerEl: HTMLDetailsElement) {
         containerEl.empty();
         const summary = containerEl.createEl("summary");

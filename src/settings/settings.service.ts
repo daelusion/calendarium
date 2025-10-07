@@ -606,6 +606,11 @@ class SettingsServiceClass {
             delete data.deletedCalendars;
             dirty = true;
         }
+
+        if (!data.layout) {
+            data.layout = DEFAULT_DATA.layout;
+        }
+
         /** Beta 29 */
         if (
             this.isOlder(

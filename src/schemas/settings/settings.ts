@@ -36,6 +36,11 @@ export type CalendariumData = {
     syncBehavior: SyncBehavior;
     paths: Readonly<[string, string]>[];
     version: Version;
+    layout: {
+        focusFirstExisting: boolean;
+        preferredLeaf: string;
+        useVerticalSplit: boolean;
+    };
 };
 
 export type MarkdownCalendariumData = Omit<CalendariumData, "">;
