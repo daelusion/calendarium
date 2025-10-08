@@ -19,7 +19,7 @@
 </script>
 
 {#if quick}
-    <QuickCreator on:cancel />
+    <QuickCreator on:cancel on:save />
 {:else}
-    <Creator {top} {color} on:cancel />
+    <Creator {top} {color} on:cancel on:save />
 {/if}

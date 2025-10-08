@@ -1063,5 +1063,8 @@ class CreatorModal extends CalendariumModal {
             this.saved = false;
             super.close();
         });
+        this.$app.$on("save", () => {
+            this.close();
+        });
     }
 }

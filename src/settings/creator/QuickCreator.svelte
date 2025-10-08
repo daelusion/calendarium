@@ -21,7 +21,7 @@
 </script>
 
 {#if !Platform.isMobile}
-    <Sidebar {selected} sections={["General", "Events"]} on:cancel />
+    <Sidebar {selected} sections={["General", "Events"]} on:cancel on:save />
     <div class="vertical-tab-content-container {$selected.toLowerCase()}s">
         <History></History>
         <div class="vertical-tab-content">

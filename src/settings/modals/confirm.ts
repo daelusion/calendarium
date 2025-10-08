@@ -1,4 +1,10 @@
-import { App, ButtonComponent, ExtraButtonComponent, Modal } from "obsidian";
+import {
+    App,
+    ButtonComponent,
+    ExtraButtonComponent,
+    Modal,
+    ToggleComponent,
+} from "obsidian";
 import Calendarium from "src/main";
 import { CalendariumModal } from "./modal";
 import { SettingsService } from "../settings.service";
@@ -144,41 +150,53 @@ export class ConfirmExitModal extends CalendariumModal {
         super(plugin.app);
     }
     async display() {
+        this.setTitle("Incomplete Calendar Setup");
+
         this.contentEl.empty();
         this.contentEl.addClass("confirm-modal");
         this.contentEl.createEl("p", {
-            text: "Additional information is required to save this calendar. Any changes you may have made will be discarded if you exit now.",
+            text: "Additional information is required to save this calendar. ",
+        });
+        this.contentEl.createEl("p", {
+            text: "Any changes you may have made will be discarded if you exit now.",
         });
 
         const buttonContainerEl = this.contentEl.createDiv(
             "calendarium-confirm-buttons-container"
         );
-        buttonContainerEl.createEl("a").createEl("small", {
-            cls: "dont-ask",
-            text: "Exit and don't ask again",
-        }).onclick = async () => {
-            this.confirmed = true;
-            this.plugin.data.exit.saving = true;
-            await SettingsService.save();
-            this.close();
-        };
+
+        const toggleDiv = buttonContainerEl.createDiv(
+            "calendarium-confirm-toggle"
+        );
+
+        toggleDiv.createSpan({
+            cls: "dont-ask-text",
+            text: "Don't ask me again",
+        });
+
+        new ToggleComponent(toggleDiv)
+            .setValue(this.plugin.data.exit.saving)
+            .onChange((bool) => {
+                this.plugin.data.exit.saving = !bool;
+            });
 
         const buttonEl = buttonContainerEl.createDiv(
             "calendarium-confirm-buttons"
         );
+
+        new ButtonComponent(buttonEl).setButtonText("Cancel").onClick(() => {
+            this.close();
+        });
+
         new ButtonComponent(buttonEl)
             .setButtonText("Exit")
             .setCta()
-            .onClick(() => {
+            .onClick(async () => {
                 this.confirmed = true;
+                this.plugin.data.exit.saving = true;
+                await SettingsService.save();
                 this.close();
             });
-        buttonEl.createEl("a").createEl("small", {
-            cls: "dont-ask",
-            text: "Keep editing",
-        }).onclick = () => {
-            this.close();
-        };
     }
     onOpen() {
         this.display();

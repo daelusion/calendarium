@@ -5,19 +5,49 @@
     import Sections from "./Sections.svelte";
     import { ButtonComponent } from "obsidian";
     import { createEventDispatcher } from "svelte";
+    import { getContext } from 'svelte';
 
     export let sections: CreatorSection[];
     export let selected: Writable<CreatorSection>;
 
-    const dispatch = createEventDispatcher<{ cancel: null }>();
+    const store = getContext("store");
+    const { valid } = store;
+
+    const dispatch = createEventDispatcher<{ cancel: null, save: null }>();
     const cancel = (node: HTMLDivElement) => {
         new ButtonComponent(node)
             .setButtonText("Cancel")
-            .setCta()
             .onClick(() => {
                 dispatch("cancel");
             });
     };
+
+    const setDisabled = (btn: ButtonComponent, valid: boolean) => {
+        const toolTip = valid ? '' : 'Calendar setup incomplete'
+
+        btn.setDisabled(!valid)
+        btn.setTooltip(toolTip);
+    }
+
+
+    let saveButton: ButtonComponent | null = null;
+    let saveNode: HTMLElement | null = null;
+
+    const save = (node: HTMLElement) => {
+        saveNode = node;
+        saveButton = new ButtonComponent(node)
+            .setButtonText("Save")
+            .setCta()
+            .onClick(() => dispatch("save"));
+
+        setDisabled(saveButton, $valid);
+    };
+
+    $: if (saveButton) {
+        setDisabled(saveButton, $valid)
+    }
+
+
 </script>
 
 <div class="vertical-tab-header">
@@ -28,6 +58,7 @@
 
     <div class="bottom">
         <div class="cancel" use:cancel />
+        <div use:save />
     </div>
 </div>
 
@@ -37,6 +68,7 @@
         flex-flow: column nowrap;
     }
     .bottom {
+        gap: .5rem;
         margin-top: auto;
         justify-content: flex-end;
         display: flex;

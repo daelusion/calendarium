@@ -120,6 +120,16 @@
     align-items: center;
 }
 
+.calendarium-confirm-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.calendarium-confirm-toggle .dont-ask-text {
+    font-size: 1rem;
+}
+
 .calendarium-confirm-buttons-container .dont-ask {
     cursor: pointer;
 }

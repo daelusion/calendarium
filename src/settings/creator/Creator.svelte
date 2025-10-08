@@ -30,7 +30,7 @@
 </script>
 
 {#if Platform.isTablet || Platform.isDesktop}
-    <Sidebar {selected} sections={[...SettingsSections]} on:cancel />
+    <Sidebar {selected} sections={[...SettingsSections]} on:cancel on:save />
     <div class="vertical-tab-content-container {$selected.toLowerCase()}">
         <History></History>
         <div class="vertical-tab-content">
