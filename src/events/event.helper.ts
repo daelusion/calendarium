@@ -399,7 +399,7 @@ export class CalEventHelper {
     ): Result<number | null, string> {
         // validate the day against the month (and perhaps year)
         if (typeof day === "number" && day < 1) return Ok(1);
-        if (typeof day === "number") {
+        if (typeof day === "number" && !Number.isNaN(day)) {
             for (const month of [months].flat()) {
                 if (!month) continue;
                 for (const year of [years].flat()) {
@@ -414,7 +414,7 @@ export class CalEventHelper {
             return Ok(day);
         }
         let leapday = this.calendar.static.leapDays.find(
-            (l) => l.name && l.name.startsWith(input.month)
+            (l) => l.name && l.name.startsWith(input.day)
         );
 
         if (leapday) {
@@ -503,6 +503,7 @@ export class CalEventHelper {
                 day = result.unwrap();
             }
         }
+
         return {
             year,
             month,
@@ -594,6 +595,9 @@ export class CalEventHelper {
         );
         if (year && !testLeapDay(leapday, year)) {
             return null;
+        }
+        if (leapday.intercalary && leapday.after) {
+            return leapday.after + 1;
         }
         const day = cm.length + leapdays.indexOf(leapday) + 1;
         return day;
