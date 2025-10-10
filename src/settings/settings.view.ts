@@ -476,17 +476,18 @@ export default class CalendariumSettings extends PluginSettingTab {
                     b.setIcon(QUICK_CREATOR)
                         .setTooltip("Open quick creator")
                         .onClick(async () => {
-                            const edited = await this.launchCalendarCreator(
-                                calendar,
-                                true
+                            const modal = new CalendarEditorModal(
+                                this.plugin,
+                                true,
+                                undefined,
+                                calendar.id
                             );
-                            if (edited) {
-                                await this.settings$.addCalendar(
-                                    edited,
-                                    calendar
-                                );
+
+                            modal.onClose = () => {
                                 this.display();
-                            }
+                            };
+
+                            modal.open();
                         });
                 })
                 .addExtraButton((b) => {
@@ -949,6 +950,7 @@ export default class CalendariumSettings extends PluginSettingTab {
                 });
             });
     }
+    myModal: CalendarEditorModal | null;
     modal: CreatorModal | null;
     launchCalendarCreator(
         calendar: Calendar | PresetCalendar = DEFAULT_CALENDAR,
@@ -1007,11 +1009,12 @@ class CreatorModal extends CalendariumModal {
     saved = false;
     store: CreatorStore;
     $app: CreatorController;
+
     constructor(
         public plugin: Calendarium,
         calendar: Calendar,
-        public quick = false,
-        public original: string | null = null
+        public useQuickCreator = false,
+        public originalCalendarId: string | null = null
     ) {
         super(plugin.app);
         this.modalEl.addClass("calendarium-creator");
@@ -1028,6 +1031,7 @@ class CreatorModal extends CalendariumModal {
     }
     async checkCanExit() {
         if (get(this.store.valid)) return true;
+
         if (SettingsService.getData().exit.saving) return true;
         return new Promise((resolve) => {
             const modal = new ConfirmExitModal(this.plugin);
@@ -1055,8 +1059,8 @@ class CreatorModal extends CalendariumModal {
                 store: this.store,
                 plugin: this.plugin,
                 top: 0,
-                quick: this.quick,
-                original: this.original,
+                quick: this.useQuickCreator,
+                original: this.originalCalendarId,
             },
         });
         this.$app.$on("cancel", () => {
@@ -1064,6 +1068,120 @@ class CreatorModal extends CalendariumModal {
             super.close();
         });
         this.$app.$on("save", () => {
+            this.close();
+        });
+    }
+}
+
+export class CalendarEditorModal extends CalendariumModal {
+    readonly originalCalendar: Calendar | undefined;
+    editableCalendar: Calendar;
+    creatorStore: CreatorStore;
+    $app: CreatorController;
+
+    constructor(
+        public plugin: Calendarium,
+        public useQuickCreator = false,
+        preset?: Calendar,
+        calendarId?: string
+    ) {
+        super(plugin.app);
+
+        let calendarToCopy: Calendar;
+        if (preset && calendarId) {
+            throw new Error("One of 'preset' or 'calendarId' must be provided");
+        } else if (preset) {
+            calendarToCopy = preset;
+        } else if (calendarId) {
+            const existing = SettingsService.getCalendar(calendarId);
+            if (!existing) {
+                throw new Error("No calendar provided");
+            }
+
+            this.originalCalendar = copy(existing);
+            calendarToCopy = existing;
+        } else {
+            throw new Error("One of 'preset' or 'calendarId' must be provided");
+        }
+
+        this.plugin = plugin;
+
+        this.modalEl.addClass("calendarium-creator");
+        this.modalEl.addClasses(["mod-sidebar-layout", "mod-settings"]);
+        this.contentEl.addClass("vertical-tabs-container");
+
+        this.editableCalendar = copy(calendarToCopy);
+
+        console.log(this.editableCalendar);
+
+        this.creatorStore = createCreatorStore(
+            this.plugin,
+            this.editableCalendar
+        );
+
+        this.scope.register([Platform.isMacOS ? "Meta" : "Ctrl"], "z", () => {
+            if (get(this.creatorStore.canUndo)) this.creatorStore.undo();
+        });
+
+        this.scope.register([Platform.isMacOS ? "Meta" : "Ctrl"], "y", () => {
+            if (get(this.creatorStore.canRedo)) this.creatorStore.redo();
+        });
+    }
+    async checkCanExit() {
+        if (get(this.creatorStore.valid)) return true;
+
+        if (SettingsService.getData().exit.saving) return true;
+
+        return new Promise((resolve) => {
+            const modal = new ConfirmExitModal(this.plugin);
+            modal.onClose = () => {
+                resolve(modal.confirmed);
+            };
+            modal.open();
+        });
+    }
+
+    async saveCalendar() {
+        if (this.canSave()) {
+            await SettingsService.addCalendar(
+                this.editableCalendar,
+                this.originalCalendar
+            );
+        } else {
+            console.warn("Cannot save as calendar is invalid");
+        }
+    }
+
+    async forceClose() {
+        super.close();
+    }
+
+    async close() {
+        await this.saveCalendar();
+
+        super.close();
+    }
+
+    canSave() {
+        return get(this.creatorStore.valid);
+    }
+
+    async display() {
+        this.$app = new CreatorController({
+            target: this.contentEl,
+            props: {
+                store: this.creatorStore,
+                plugin: this.plugin,
+                top: 0,
+                quick: this.useQuickCreator,
+                original: this.originalCalendar?.id ?? null,
+            },
+        });
+        this.$app.$on("cancel", () => {
+            this.forceClose();
+        });
+        this.$app.$on("save", () => {
+            console.log("trying to save");
             this.close();
         });
     }
