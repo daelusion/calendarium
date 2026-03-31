@@ -24,7 +24,13 @@ import {
     SeasonType,
     UnitSystem,
     type SeasonalData,
+    type Weathered,
 } from "../../schemas/calendar/seasonal";
+import {
+    NO_LOCATION,
+    type Location,
+    type LocationData,
+} from "src/schemas/calendar/locations";
 
 export default class Import {
     static import(objects: ImportedCalendar[]) {
@@ -148,6 +154,12 @@ export default class Import {
                     });
                 }
             }
+
+            let locationData: LocationData = {
+                locations: [],
+                defaultLocation: NO_LOCATION,
+            };
+
             let seasonal: SeasonalData = {
                 seasons: [],
                 type: SeasonType.PERIODIC,
@@ -160,9 +172,10 @@ export default class Import {
                     tempUnits: UnitSystem.IMPERIAL,
                     windUnits: UnitSystem.METRIC,
                     primaryWindDirection: "E",
-                    freezingPoint: 0
+                    freezingPoint: 0,
                 },
             };
+
             if ("seasons" in static_data) {
                 const seasonalData = static_data.seasons;
                 if (!seasonalData.global_settings.periodic_seasons) {
@@ -178,7 +191,7 @@ export default class Import {
                             tempUnits: UnitSystem.IMPERIAL,
                             windUnits: UnitSystem.METRIC,
                             primaryWindDirection: "E",
-                            freezingPoint: 0
+                            freezingPoint: 0,
                         },
                     };
                 }
@@ -247,6 +260,40 @@ export default class Import {
                             }
                         }
                     }
+                }
+
+                const weatherMap: Record<string, Weathered> =
+                    seasonal.seasons.reduce((a, s) => {
+                        let weathered: Weathered;
+                        if (s.kind === SeasonKind.CUSTOM) {
+                            weathered = {
+                                kind: s.kind,
+                                weatherOffset: s.weatherOffset,
+                                weatherPeak: s.weatherPeak,
+                                weather: s.weather,
+                            };
+                        } else {
+                            weathered = {
+                                kind: s.kind,
+                                weatherOffset: s.weatherOffset,
+                                weatherPeak: s.weatherPeak,
+                            };
+                        }
+
+                        return {
+                            ...a,
+                            [s.id]: weathered,
+                        };
+                    }, {});
+
+                for (const location of seasonalData.locations) {
+                    location.seasons.forEach((ses) => {});
+
+                    locationData.locations.push({
+                        id: nanoid(6),
+                        name: location.name,
+                        seasons: weatherMap,
+                    });
                 }
             }
             const staticData: StaticCalendarData = {
@@ -389,6 +436,7 @@ export default class Import {
                 id: nanoid(6),
                 categories: Array.from(existingCategories.values()),
                 seasonal,
+                locations: locationData,
             }) as Calendar;
 
             calendars.push(calendarData);

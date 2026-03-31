@@ -88,18 +88,19 @@ export function getWeatherData(
     }
 }
 
+type CustomKind = {
+    kind: typeof SeasonKind.CUSTOM;
+    weather: SeasonalWeatherData;
+};
+
+type NonCustomKind = {
+    kind: (typeof SeasonKind)[Exclude<keyof typeof SeasonKind, "CUSTOM">];
+};
+
 export type Weathered = {
     weatherOffset: number;
     weatherPeak: number;
-} & (
-    | {
-          kind: typeof SeasonKind.CUSTOM;
-          weather: SeasonalWeatherData;
-      }
-    | {
-          kind: (typeof SeasonKind)[Exclude<keyof typeof SeasonKind, "CUSTOM">];
-      }
-);
+} & (CustomKind | NonCustomKind);
 type WeatheredSeason = BaseSeason & Weathered;
 
 export type DatedSeason = WeatheredSeason & {

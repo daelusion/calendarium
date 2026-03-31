@@ -112,8 +112,32 @@ interface ImportedCategory {
 
 interface Seasons {
     data: SeasonData[];
-    locations: any[]; // Adjust this based on the specific structure of "locations" if needed
+    locations: ImportedLocation[]; // Adjust this based on the specific structure of "locations" if needed
     global_settings: GlobalSettings;
+}
+
+interface ImportedLocationSeason {
+    weather: {
+        temp_low: number;
+        temp_high: number;
+        precipitation: number;
+        precipitation_intensity: number;
+    };
+    time: {
+        sunset: {
+            hour: number;
+            minute: number;
+        };
+        sunrise: {
+            hour: number;
+            minute: number;
+        };
+    };
+}
+
+interface ImportedLocation {
+    name: string;
+    seasons: ImportedLocationSeason[];
 }
 
 interface SeasonData {
