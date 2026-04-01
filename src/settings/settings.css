@@ -369,6 +369,15 @@ span.no-calendars {
 
 /* Mobile Styling */
 
+.existing-calendars {
+    border-top: var(--border-width) solid var(--background-modifier-border);
+    padding-top: var(--size-4-4);
+}
+
+.existing-calendars .setting-item-heading {
+    padding-inline-start: 0;
+}
+
 .is-phone .calendarium-nested-settings .existing-calendar-list {
     border: 1px solid var(--menu-divider-color);
 }
@@ -378,7 +387,6 @@ span.no-calendars {
 }
 
 .existing-calendars-list {
-    border-radius: var(--touch-radius-xs);
     padding: var(--size-4-4);
     border: 1px solid var(--background-secondary) !important;
     margin-inline: var(--size-4-4);

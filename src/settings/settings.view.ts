@@ -77,7 +77,7 @@ declare module "svelte" {
 
 export default class CalendariumSettings extends PluginSettingTab {
     contentEl: HTMLDivElement;
-    calendarsEl: HTMLDetailsElement;
+    calendarsEl: HTMLDivElement;
     existingEl: HTMLDivElement;
     pathsEl: HTMLDivElement;
     toggleState = {
@@ -107,8 +107,8 @@ export default class CalendariumSettings extends PluginSettingTab {
 
         this.buildInfo(this.contentEl.createDiv("calendarium-nested-settings"));
 
-        this.calendarsEl = this.contentEl.createEl("details", {
-            cls: "calendarium-nested-settings",
+        this.calendarsEl = this.contentEl.createDiv({
+            cls: "setting-group",
             attr: {
                 /* ...(this.toggleState.calendar ? { open: `open` } : {}), */
                 open: "open",
@@ -192,15 +192,23 @@ export default class CalendariumSettings extends PluginSettingTab {
     }
     async buildCalendars() {
         this.calendarsEl.empty();
-        const summary = this.calendarsEl.createEl("summary");
-        this.calendarsEl.ontoggle = async () => {
-            this.toggleState.calendar = this.calendarsEl.open;
-        };
-        new Setting(summary).setHeading().setName("Calendar management");
 
-        setIcon(summary.createDiv("collapser").createDiv("handle"), COLLAPSE);
+        this.calendarsEl.createDiv({
+            cls: "setting-item-heading",
+            text: "Calendar management",
+        });
+        // this.calendarsEl.ontoggle = async () => {
+        //     this.toggleState.calendar = this.calendarsEl.open;
+        // };
+        // new Setting(summary).setHeading().setName("Calendar management");
 
-        new Setting(this.calendarsEl)
+        // setIcon(summary.createDiv("collapser").createDiv("handle"), COLLAPSE);
+
+        const settingGroup = this.calendarsEl.createDiv({
+            cls: "setting-items",
+        });
+
+        new Setting(settingGroup)
             .setName("Default calendar")
             .setDesc("Views will open to this calendar by default.")
             .addDropdown((d) => {
@@ -227,7 +235,7 @@ export default class CalendariumSettings extends PluginSettingTab {
                     this.buildPaths();
                 });
             });
-        new Setting(this.calendarsEl)
+        new Setting(settingGroup)
             .setName("Import from Fantasy Calendar")
             .setDesc(
                 createFragment((e) => {
@@ -283,7 +291,7 @@ export default class CalendariumSettings extends PluginSettingTab {
             });
 
         if (this.settings$.deletedCalendars?.length) {
-            new Setting(this.calendarsEl)
+            new Setting(settingGroup)
                 .setName("Restore deleted calendars")
                 .addButton((b) => {
                     b.setTooltip("Restore").setIcon(RESTORE);
@@ -325,7 +333,7 @@ export default class CalendariumSettings extends PluginSettingTab {
                 });
         }
 
-        new Setting(this.calendarsEl)
+        new Setting(settingGroup)
             .setName("Create new calendar")
             .addButton((button) => {
                 button.onClick(async () => {
@@ -455,20 +463,12 @@ export default class CalendariumSettings extends PluginSettingTab {
                 button.onClick(() => input.click());
             });
 
-        this.existingEl = this.calendarsEl.createDiv("existing-calendars");
+        this.existingEl = settingGroup.createDiv("existing-calendars");
 
         this.showCalendars();
     }
     showCalendars() {
         this.existingEl.empty();
-        if (!this.data.calendars.length) {
-            this.existingEl.createSpan({
-                cls: "no-calendars",
-                text: "No calendars created! Create a calendar to see it here.",
-            });
-            return;
-        }
-
         const settingGroup = this.existingEl.createDiv({
             cls: "setting-group",
         });
@@ -477,6 +477,14 @@ export default class CalendariumSettings extends PluginSettingTab {
             cls: "setting-item-heading",
             text: "Calendars",
         });
+
+        if (!this.data.calendars.length) {
+            this.existingEl.createSpan({
+                cls: "no-calendars existing-calendars-list setting-items",
+                text: "No calendars created! Create a calendar to see it here.",
+            });
+            return;
+        }
 
         const calendarList = settingGroup.createDiv({
             cls: "setting-items existing-calendars-list",
