@@ -111,6 +111,7 @@
         transform: rotate(90deg);
     }
 
+    :not(.is-phone) 
     .creator-settings-container {
         padding: 0.75em var(--size-4-3);
     }

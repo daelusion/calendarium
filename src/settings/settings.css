@@ -3,7 +3,7 @@
 }
 
 /** Event Paths */
-.calendarium-settings .existing-calendars {
+.calendarium-settings .existing-calendar-list {
     margin: 18px;
 }
 /* .calendarium-settings .existing-calendars > span {
@@ -149,7 +149,8 @@
     margin-top: initial;
 }
 
-details.calendarium-nested-settings > summary {
+details.calendarium-nested-settings > summary,
+.collapsing-header {
     outline: none;
     display: flex;
     justify-content: space-between;
@@ -201,9 +202,9 @@ details.calendarium-nested-settings[open] > summary > .collapser > .handle {
 }
 
 .calendarium-nested-settings .setting-item {
-    border: 0px;
-    padding-bottom: 0;
+    --setting-items-radius: var(--touch-radius-xxs);
 }
+
 .calendarium-nested-settings {
     padding-bottom: 18px;
 }
@@ -364,4 +365,21 @@ span.no-calendars {
     display: flex;
     align-items: center;
     gap: 0.125rem;
+}
+
+/* Mobile Styling */
+
+.is-phone .calendarium-nested-settings .existing-calendar-list {
+    border: 1px solid var(--menu-divider-color);
+}
+
+.is-phone .calendarium-nested-settings .existing-calendars-list .setting-item {
+    padding-bottom: var(--size-4-4);
+}
+
+.existing-calendars-list {
+    border-radius: var(--touch-radius-xs);
+    padding: var(--size-4-4);
+    border: 1px solid var(--background-secondary) !important;
+    margin-inline: var(--size-4-4);
 }

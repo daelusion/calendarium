@@ -70,7 +70,7 @@ interface Context {
 declare module "svelte" {
     function setContext<K extends keyof Context>(
         key: K,
-        value: Context[K]
+        value: Context[K],
     ): void;
     function getContext<K extends keyof Context>(key: K): Context[K];
 }
@@ -94,15 +94,15 @@ export default class CalendariumSettings extends PluginSettingTab {
         super(plugin.app, plugin);
         this.plugin.registerEvent(
             this.app.workspace.on("calendarium-settings-external-load", () =>
-                this.display()
-            )
+                this.display(),
+            ),
         );
     }
     async display() {
         this.containerEl.empty();
         this.containerEl.addClass("calendarium-settings");
         this.contentEl = this.containerEl.createDiv(
-            "calendarium-settings-content"
+            "calendarium-settings-content",
         );
 
         this.buildInfo(this.contentEl.createDiv("calendarium-nested-settings"));
@@ -123,7 +123,7 @@ export default class CalendariumSettings extends PluginSettingTab {
                     /* ...(this.toggleState.calendar ? { open: `open` } : {}), */
                     open: "open",
                 },
-            })
+            }),
         );
         this.parsingEl = this.contentEl.createEl("details", {
             cls: "calendarium-nested-settings",
@@ -138,7 +138,7 @@ export default class CalendariumSettings extends PluginSettingTab {
                 attr: {
                     ...(this.toggleState.advanced ? { open: `open` } : {}),
                 },
-            })
+            }),
         );
     }
     async buildInfo(containerEl: HTMLElement) {
@@ -157,7 +157,7 @@ export default class CalendariumSettings extends PluginSettingTab {
                         e.createSpan({
                             text: `This will overwrite your existing data file.`,
                         });
-                    })
+                    }),
                 )
                 .addButton((b) => {
                     b.setIcon(IMPORT).onClick(async () => {
@@ -168,7 +168,7 @@ export default class CalendariumSettings extends PluginSettingTab {
                                 {
                                     cta: "Import",
                                     secondary: "Cancel",
-                                }
+                                },
                             )
                         ) {
                             await this.settings$.transitionMarkdownSettings();
@@ -181,7 +181,7 @@ export default class CalendariumSettings extends PluginSettingTab {
                         if (
                             await confirmWithModal(
                                 app,
-                                "This will permanently delete the old data file. Are you sure?"
+                                "This will permanently delete the old data file. Are you sure?",
                             )
                         ) {
                             await this.settings$.deleteMarkdownSettings();
@@ -239,7 +239,7 @@ export default class CalendariumSettings extends PluginSettingTab {
                         text: "Fantasy Calendar website",
                         cls: "external-link",
                     });
-                })
+                }),
             )
             .addButton((b) => {
                 const input = createEl("input", {
@@ -269,7 +269,7 @@ export default class CalendariumSettings extends PluginSettingTab {
                         new Notice(
                             `There was an error while importing the calendar${
                                 files.length == 1 ? "" : "s"
-                            }.`
+                            }.`,
                         );
                         console.error(e);
                     }
@@ -296,13 +296,13 @@ export default class CalendariumSettings extends PluginSettingTab {
                         .setText(`${this.settings$.deletedCalendars.length}`);
                     b.onClick(() => {
                         const modal = new RestoreCalendarModal(
-                            this.settings$.deletedCalendars
+                            this.settings$.deletedCalendars,
                         );
                         modal.onSave = async () => {
                             if (modal.item?.length) {
                                 for (let calendar of modal.item) {
                                     this.settings$.deletedCalendars.remove(
-                                        calendar
+                                        calendar,
                                     );
                                     await this.settings$.addCalendar(calendar);
                                 }
@@ -313,8 +313,8 @@ export default class CalendariumSettings extends PluginSettingTab {
                                     this.settings$.deletedCalendars.filter(
                                         (d) =>
                                             !modal.permanentlyDelete.includes(
-                                                d.id
-                                            )
+                                                d.id,
+                                            ),
                                     );
                                 await this.settings$.save();
                                 this.display();
@@ -333,7 +333,7 @@ export default class CalendariumSettings extends PluginSettingTab {
                     if (!preset) return;
                     const calendar = await this.launchCalendarCreator(
                         preset,
-                        true
+                        true,
                     );
                     if (calendar) {
                         await this.settings$.addCalendar(calendar);
@@ -389,7 +389,7 @@ export default class CalendariumSettings extends PluginSettingTab {
                                 });
                                 const fileContainer = c.createEl(
                                     "p",
-                                    "calendarium-file-status-container"
+                                    "calendarium-file-status-container",
                                 );
                                 for (const file of fileArray) {
                                     const fileEl = fileContainer.createDiv({
@@ -401,24 +401,24 @@ export default class CalendariumSettings extends PluginSettingTab {
                                     fileEls.set(file, fileEl);
                                 }
                             }),
-                            0
+                            0,
                         );
                         let imported = 0;
                         for (const file of fileArray) {
                             const fileEl = fileEls.get(file)!;
                             const iconEl = fileEl.createDiv(
-                                "migrating-icon rotating"
+                                "migrating-icon rotating",
                             );
                             setIcon(iconEl, LOADING);
                             try {
                                 const calendar = JSON.parse(await file.text());
                                 this.settings$.updateCalendarsToNewSchema(
                                     [calendar],
-                                    SettingsService.getData()
+                                    SettingsService.getData(),
                                 );
                                 const validator = createCreatorStore(
                                     this.plugin,
-                                    calendar
+                                    calendar,
                                 );
 
                                 iconEl.removeClass("rotating");
@@ -443,7 +443,7 @@ export default class CalendariumSettings extends PluginSettingTab {
                         headerEl!.setText(
                             `${imported} calendar${
                                 imported == 1 ? "" : "s"
-                            } imported.`
+                            } imported.`,
                         );
                         setTimeout(() => {
                             notice.hide();
@@ -468,8 +468,22 @@ export default class CalendariumSettings extends PluginSettingTab {
             });
             return;
         }
+
+        const settingGroup = this.existingEl.createDiv({
+            cls: "setting-group",
+        });
+
+        settingGroup.createDiv({
+            cls: "setting-item-heading",
+            text: "Calendars",
+        });
+
+        const calendarList = settingGroup.createDiv({
+            cls: "setting-items existing-calendars-list",
+        });
+
         for (let calendar of this.data.calendars) {
-            new Setting(this.existingEl)
+            new Setting(calendarList)
                 .setName(calendar.name)
                 .setDesc(calendar.description ?? "")
                 .addExtraButton((b) => {
@@ -478,12 +492,12 @@ export default class CalendariumSettings extends PluginSettingTab {
                         .onClick(async () => {
                             const edited = await this.launchCalendarCreator(
                                 calendar,
-                                true
+                                true,
                             );
                             if (edited) {
                                 await this.settings$.addCalendar(
                                     edited,
-                                    calendar
+                                    calendar,
                                 );
                                 this.display();
                             }
@@ -493,13 +507,12 @@ export default class CalendariumSettings extends PluginSettingTab {
                     b.setIcon(CUSTOM_CREATOR)
                         .setTooltip("Open custom creator")
                         .onClick(async () => {
-                            const edited = await this.launchCalendarCreator(
-                                calendar
-                            );
+                            const edited =
+                                await this.launchCalendarCreator(calendar);
                             if (edited) {
                                 await this.settings$.addCalendar(
                                     edited,
-                                    calendar
+                                    calendar,
                                 );
                                 this.display();
                             }
@@ -563,7 +576,7 @@ export default class CalendariumSettings extends PluginSettingTab {
                             text: "The Page Preview plugin is required to modify this setting.",
                         });
                     }
-                })
+                }),
             )
             .addToggle((t) => {
                 t.setDisabled(!previewEnabled)
@@ -605,7 +618,7 @@ export default class CalendariumSettings extends PluginSettingTab {
                 explanation.createDiv().createSpan({
                     text: "Use the following settings to match events found in a folder to a specific calendar. The most specific path (the most nested folder) will be used.",
                 });
-            })
+            }),
         );
 
         new Setting(containerEl)
@@ -615,7 +628,7 @@ export default class CalendariumSettings extends PluginSettingTab {
                     e.createSpan({
                         text: "Parse the vault for Calendarium events.",
                     });
-                })
+                }),
             )
             .addToggle((t) => {
                 t.setValue(this.data.autoParse).onChange(async (v) => {
@@ -638,7 +651,7 @@ export default class CalendariumSettings extends PluginSettingTab {
                     e.createSpan({
                         text: " events.",
                     });
-                })
+                }),
             )
             .addText((t) => {
                 t.setValue(this.data.inlineEventsTag ?? "").onChange(
@@ -648,7 +661,7 @@ export default class CalendariumSettings extends PluginSettingTab {
                         } else {
                             this.data.inlineEventsTag = v.replace(/$#/, "");
                         }
-                    }
+                    },
                 );
                 t.inputEl.onblur = async () => {
                     await this.settings$.save({
@@ -660,7 +673,7 @@ export default class CalendariumSettings extends PluginSettingTab {
         new Setting(containerEl)
             .setName("Event paths")
             .setDesc(
-                `Calendarium can be restricted to look at certain paths in your vault for events. You can add specific paths here and associate default calendars to those paths. If no calendar is selected, Calendarium will add the event to your default calendar, if any.`
+                `Calendarium can be restricted to look at certain paths in your vault for events. You can add specific paths here and associate default calendars to those paths. If no calendar is selected, Calendarium will add the event to your default calendar, if any.`,
             );
         this.pathsEl = containerEl.createDiv("calendarium-event-paths");
 
@@ -681,7 +694,7 @@ export default class CalendariumSettings extends PluginSettingTab {
             //sort data
             this.folders = this.allFolders.filter(
                 (f): f is TFolder =>
-                    !this.data.paths.find(([p]) => f.path === p)
+                    !this.data.paths.find(([p]) => f.path === p),
             );
             this.data.paths.sort((a, b) => {
                 return a[0].localeCompare(b[0]);
@@ -762,7 +775,7 @@ export default class CalendariumSettings extends PluginSettingTab {
                             "This path is registered to multiple calendars",
                     },
                 }),
-                WARNING
+                WARNING,
             );
         } else {
             rowEl.removeClass("conflict");
@@ -803,7 +816,7 @@ export default class CalendariumSettings extends PluginSettingTab {
         rowEl: HTMLElement,
         index: number,
         path: string,
-        calendar: string
+        calendar: string,
     ) {
         rowEl.empty();
         const originalPath = path;
@@ -834,7 +847,7 @@ export default class CalendariumSettings extends PluginSettingTab {
             (p) => {
                 path = p;
             },
-            path
+            path,
         );
         this.buildPathDropdown(dropEl, calendar, (c) => {
             calendar = c;
@@ -846,7 +859,7 @@ export default class CalendariumSettings extends PluginSettingTab {
     buildPathDropdown(
         dropEl: HTMLElement,
         originalValue: string,
-        callback: (calendar: string) => void
+        callback: (calendar: string) => void,
     ) {
         const drop = new DropdownComponent(dropEl);
         drop.addOption(PathSelections.DEFAULT, "Default calendar");
@@ -860,7 +873,7 @@ export default class CalendariumSettings extends PluginSettingTab {
         addButton: ExtraButtonComponent,
         iconEl: HTMLElement,
         callback: (path: string) => void,
-        originalPath: string = "Folder"
+        originalPath: string = "Folder",
     ) {
         const validateAndSend = (path: string) => {
             if (
@@ -904,7 +917,7 @@ export default class CalendariumSettings extends PluginSettingTab {
         new Setting(containerEl)
             .setName(`Reset "Don't ask again" prompts`)
             .setDesc(
-                `All confirmations set to "Don't Ask Again" will be reset.`
+                `All confirmations set to "Don't Ask Again" will be reset.`,
             )
             .addButton((b) => {
                 b.setIcon(RESET).onClick(async () => {
@@ -920,7 +933,7 @@ export default class CalendariumSettings extends PluginSettingTab {
         new Setting(containerEl)
             .setName(`Settings sync behavior`)
             .setDesc(
-                `Control how the plugin reloads data when a sync is detected.`
+                `Control how the plugin reloads data when a sync is detected.`,
             )
             .addDropdown((d) => {
                 d.addOption(SyncBehavior.Ask, "Continue asking")
@@ -940,7 +953,7 @@ export default class CalendariumSettings extends PluginSettingTab {
                     e.createSpan({
                         text: "The plugin will show debug messages when events are added, deleted or updated by the file watcher.",
                     });
-                })
+                }),
             )
             .addToggle((t) => {
                 t.setValue(this.data.debug).onChange(async (v) => {
@@ -952,7 +965,7 @@ export default class CalendariumSettings extends PluginSettingTab {
     modal: CreatorModal | null;
     launchCalendarCreator(
         calendar: Calendar | PresetCalendar = DEFAULT_CALENDAR,
-        quick = false
+        quick = false,
     ): Promise<Calendar | void> {
         /* this.containerEl.empty(); */
         const clone = copy(calendar) as Calendar;
@@ -968,7 +981,7 @@ export default class CalendariumSettings extends PluginSettingTab {
                     this.plugin,
                     clone,
                     quick,
-                    original
+                    original,
                 );
                 this.modal!.onClose = () => {
                     if (!this.modal) return;
@@ -1011,7 +1024,7 @@ class CreatorModal extends CalendariumModal {
         public plugin: Calendarium,
         calendar: Calendar,
         public quick = false,
-        public original: string | null = null
+        public original: string | null = null,
     ) {
         super(plugin.app);
         this.modalEl.addClass("calendarium-creator");

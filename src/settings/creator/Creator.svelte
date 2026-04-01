@@ -121,6 +121,10 @@
                     <Events />
                 </div>
             </div>
+            <div class='save-buttons'>
+                    <div use:cancel/>
+                    <div use:save/>
+                </div>
         {/if}
     </div>
 {/if}
