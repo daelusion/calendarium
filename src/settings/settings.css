@@ -149,8 +149,7 @@
     margin-top: initial;
 }
 
-details.calendarium-nested-settings > summary,
-.collapsing-header {
+details.calendarium-nested-settings > summary {
     outline: none;
     display: flex;
     justify-content: space-between;
@@ -387,7 +386,12 @@ span.no-calendars {
 }
 
 .existing-calendars-list {
-    padding: var(--size-4-4);
+    padding: var(--size-4-4) !important;
     border: 1px solid var(--background-secondary) !important;
     margin-inline: var(--size-4-4);
+}
+
+.is-phone .calendarium-nested-settings .existing-calendars-list {
+    margin: 0 !important;
+    padding: 0 !important;
 }

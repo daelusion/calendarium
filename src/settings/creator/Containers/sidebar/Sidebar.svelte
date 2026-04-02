@@ -21,10 +21,4 @@
         display: flex;
         flex-flow: column nowrap;
     }
-    .bottom {
-        gap: .5rem;
-        margin-top: auto;
-        justify-content: flex-end;
-        display: flex;
-    }
 </style>

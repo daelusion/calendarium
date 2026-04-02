@@ -77,7 +77,7 @@ declare module "svelte" {
 
 export default class CalendariumSettings extends PluginSettingTab {
     contentEl: HTMLDivElement;
-    calendarsEl: HTMLDivElement;
+    calendarsEl: HTMLDetailsElement;
     existingEl: HTMLDivElement;
     pathsEl: HTMLDivElement;
     toggleState = {
@@ -107,8 +107,8 @@ export default class CalendariumSettings extends PluginSettingTab {
 
         this.buildInfo(this.contentEl.createDiv("calendarium-nested-settings"));
 
-        this.calendarsEl = this.contentEl.createDiv({
-            cls: "setting-group",
+        this.calendarsEl = this.contentEl.createEl("details", {
+            cls: "setting-group calendarium-nested-settings",
             attr: {
                 /* ...(this.toggleState.calendar ? { open: `open` } : {}), */
                 open: "open",
@@ -118,7 +118,7 @@ export default class CalendariumSettings extends PluginSettingTab {
 
         this.buildEventsManagement(
             this.contentEl.createEl("details", {
-                cls: "calendarium-nested-settings",
+                cls: "setting-group calendarium-nested-settings",
                 attr: {
                     /* ...(this.toggleState.calendar ? { open: `open` } : {}), */
                     open: "open",
@@ -193,10 +193,19 @@ export default class CalendariumSettings extends PluginSettingTab {
     async buildCalendars() {
         this.calendarsEl.empty();
 
-        this.calendarsEl.createDiv({
-            cls: "setting-item-heading",
-            text: "Calendar management",
-        });
+        const summary = this.calendarsEl.createEl("summary");
+
+        this.calendarsEl.ontoggle = async () => {
+            this.toggleState.calendar = this.calendarsEl.open;
+        };
+
+        new Setting(summary).setHeading().setName("Calendar management");
+        setIcon(summary.createDiv("collapser").createDiv("handle"), COLLAPSE);
+
+        // this.calendarsEl.createDiv({
+        //     cls: "setting-item-heading",
+        //     text: "Calendar management",
+        // });
         // this.calendarsEl.ontoggle = async () => {
         //     this.toggleState.calendar = this.calendarsEl.open;
         // };
@@ -571,7 +580,11 @@ export default class CalendariumSettings extends PluginSettingTab {
         const previewEnabled =
             this.app.internalPlugins.getPluginById("page-preview")?._loaded;
 
-        new Setting(containerEl)
+        const settingsGroup = containerEl.createDiv({
+            cls: "setting-items",
+        });
+
+        new Setting(settingsGroup)
             .setName("Display event previews")
             .setDesc(
                 createFragment((e) => {
@@ -595,7 +608,7 @@ export default class CalendariumSettings extends PluginSettingTab {
                     });
             });
 
-        new Setting(containerEl)
+        new Setting(settingsGroup)
             .setName("Parse note titles for event dates")
             .addToggle((t) => {
                 t.setValue(this.data.parseDates).onChange(async (v) => {
