@@ -141,7 +141,7 @@
     }
     .vertical-tab-content {
         padding: var(--size-4-8);
-        padding-top: 0;
+        padding-top: var(--size-4-2);
     }
     .calendarium-creator-mobile {
         padding: var(--size-4-8) !important;

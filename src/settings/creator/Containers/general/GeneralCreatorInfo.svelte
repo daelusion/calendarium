@@ -3,9 +3,9 @@
     import TextAreaComponent from "../../Settings/TextAreaComponent.svelte";
     import TextComponent from "../../Settings/TextComponent.svelte";
     import ToggleComponent from "../../Settings/ToggleComponent.svelte";
-    import Details from "../../Utilities/Details.svelte";
     import { DEFAULT_DATA } from "src/settings/settings.constants";
     import { DEFAULT_FORMAT } from "src/utils/constants";
+    import Details from '../../Utilities/Details.svelte';
 
     const calendar = getContext("store");
 
@@ -40,7 +40,7 @@
     label={"The calendar must have a name"}
     alwaysOpen={true}
 >
-    <div class="calendarium-info">
+    <div class="calendarium-general-info">
         {#key $calendar.name}
             <TextComponent
                 name={"Name"}
@@ -100,12 +100,10 @@
 </Details>
 
 <style>
-    .calendarium-info :global(.calendarium-description) {
-        display: flex;
-        flex-flow: column;
-        align-items: flex-start;
-    }
-    .calendarium-info :global(.calendarium-description) :global(textarea) {
-        width: 100%;
+    .calendarium-general-info {
+        border: 1px solid var(--background-secondary);
+        pointer-events: initial;
+        padding: var(--setting-items-padding);
+        border-radius: var(--setting-items-radius);
     }
 </style>

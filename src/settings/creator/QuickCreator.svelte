@@ -4,7 +4,7 @@
     import CreatorTitle from "./CreatorTitle.svelte";
     import History from "./Utilities/History.svelte";
     import Events from "./Containers/events/Events.svelte";
-    import Info from "./Containers/general/Info.svelte";
+    import Info from "./Containers/general/GeneralCreatorInfo.svelte";
     import CurrentDate from "./Containers/dates/current/CurrentDate.svelte";
     import type { CreatorSection } from "./creator.types";
     import { writable } from "svelte/store";

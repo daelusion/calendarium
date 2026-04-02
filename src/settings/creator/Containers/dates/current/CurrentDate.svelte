@@ -18,5 +18,7 @@
     label={"Invalid current date specified"}
     {desc}
 >
-    <DateWithValidation date={currentStore} />
+    <div class="setting-items">
+        <DateWithValidation date={currentStore} />
+    </div>
 </Details>

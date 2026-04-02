@@ -56,64 +56,64 @@
         $weekdayStore.length != 1 ? "s" : ""
     }`}
 >
-    {#if !$weekdayStore.length}
-        <NoExistingItems message={"Create a new weekday to see it here."} />
-    {:else}
-        <DropZone
-            type="weekday"
-            {items}
-            {onDrop}
-            component={WeekdayInstance}
-            on:advanced={(e) => advanced(e.detail)}
-            on:trash={(e) => trash(e.detail)}
+        {#if !$weekdayStore.length}
+            <NoExistingItems message={"Create a new weekday to see it here."} />
+        {:else}
+            <DropZone
+                type="weekday"
+                {items}
+                {onDrop}
+                component={WeekdayInstance}
+                on:advanced={(e) => advanced(e.detail)}
+                on:trash={(e) => trash(e.detail)}
+            />
+        {/if}
+
+        <AddNew
+            placeholder={"Weekday"}
+            on:add={(evt) => {
+                weekdayStore.add({
+                    type: "day",
+                    name: evt.detail,
+                    id: nanoid(6),
+                });
+            }}
         />
-    {/if}
 
-    <AddNew
-        placeholder={"Weekday"}
-        on:add={(evt) => {
-            weekdayStore.add({
-                type: "day",
-                name: evt.detail,
-                id: nanoid(6),
-            });
-        }}
-    />
-
-    <ToggleComponent
-        name={"Overflow weeks"}
-        desc={"Weeks will flow into the next month. Disable to reset the weekday each month."}
-        value={$staticStore.overflow}
-        on:click={() =>
-            staticStore.setProperty("overflow", !$staticStore.overflow)}
-    />
-    <div class="setting-item">
-        <div class="setting-item-info">
-            <div class="setting-item-name">First day</div>
-            <div class="setting-item-description">
-                The weekday for the very first day on the calendar.
+        <ToggleComponent
+            name={"Overflow weeks"}
+            desc={"Weeks will flow into the next month. Disable to reset the weekday each month."}
+            value={$staticStore.overflow}
+            on:click={() =>
+                staticStore.setProperty("overflow", !$staticStore.overflow)}
+        />
+        <div class="setting-item">
+            <div class="setting-item-info">
+                <div class="setting-item-name">First day</div>
+                <div class="setting-item-description">
+                    The weekday for the very first day on the calendar.
+                </div>
+            </div>
+            <div class="setting-item-control">
+                <select
+                    class="dropdown"
+                    aria-label={$weekdayStore.filter((v) => v.name?.length).length
+                        ? null
+                        : "Named weekday required"}
+                    bind:value={firstWeekday}
+                    on:change={() => {
+                        staticStore.setProperty("firstWeekDay", firstWeekday);
+                    }}
+                >
+                    <option selected hidden disabled>Select a Weekday</option>
+                    {#each $weekdayStore.filter((v) => v.name?.length) as weekday, index}
+                        <option disabled={!overflow} value={index}>
+                            {weekday.name ?? ""}
+                        </option>
+                    {/each}
+                </select>
             </div>
         </div>
-        <div class="setting-item-control">
-            <select
-                class="dropdown"
-                aria-label={$weekdayStore.filter((v) => v.name?.length).length
-                    ? null
-                    : "Named weekday required"}
-                bind:value={firstWeekday}
-                on:change={() => {
-                    staticStore.setProperty("firstWeekDay", firstWeekday);
-                }}
-            >
-                <option selected hidden disabled>Select a Weekday</option>
-                {#each $weekdayStore.filter((v) => v.name?.length) as weekday, index}
-                    <option disabled={!overflow} value={index}>
-                        {weekday.name ?? ""}
-                    </option>
-                {/each}
-            </select>
-        </div>
-    </div>
 </Details>
 
 <style>

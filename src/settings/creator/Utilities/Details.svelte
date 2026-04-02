@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { setIcon } from "obsidian";
+    import { Platform, setIcon } from "obsidian";
     import { COLLAPSE, setNodeIcon } from "src/utils/icons";
     import WarningLabel from "./WarningLabel.svelte";
     import { WARNING } from "src/utils/icons";
@@ -19,14 +19,15 @@
     };
 </script>
 
+
 <details
-    class="creator calendarium-nested-settings setting-item"
+    class="calendarium-nested-settings setting-group"
     class:always-open={alwaysOpen}
+    class:calendarium-details-group={!Platform.isPhone}
     bind:open
     use:details
 >
     <summary
-        class="calendarium-nested-summary"
         on:keyup={(evt) => evt.preventDefault()}
     >
         <div class="setting-item setting-item-heading">
@@ -53,33 +54,23 @@
         </div>
     </summary>
 
-    <div class="creator-settings-container">
+    <div class="setting-items">
         <slot />
     </div>
 </details>
 
 <style>
+    .calendarium-details-group .setting-items {
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+
+
     .always-open {
         pointer-events: none;
     }
-    .creator-settings-container {
-        pointer-events: initial;
-    }
     .calendarium-nested-settings {
         position: relative;
-    }
-    .calendarium-nested-summary {
-        outline: none;
-        list-style: none !important;
-        list-style-type: none !important;
-        min-height: 1rem;
-        border-top-left-radius: 0.1rem;
-        border-top-right-radius: 0.1rem;
-        cursor: pointer;
-        background-color: var(--creator-background-color);
-        margin-right: 0;
-        display: flex;
-        justify-content: space-between;
     }
     .right-side {
         display: flex;
@@ -109,11 +100,6 @@
 
     details[open] .handle {
         transform: rotate(90deg);
-    }
-
-    :not(.is-phone) 
-    .creator-settings-container {
-        padding: 0.75em var(--size-4-3);
     }
 
     .calendarium-nested-settings {
